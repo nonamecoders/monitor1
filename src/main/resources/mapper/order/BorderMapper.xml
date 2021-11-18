@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.alan.monitor1.mapper.BorderMapper">
+
+    <select id="borderList"  resultType="com.alan.monitor1.order.Border" resultMap="borderListCheck">
+
+			declare @today varchar(8) = '20181127';
+
+			WITH FB AS(
+				SELECT  'PIZZAHUT' as brand_cd
+						,idx
+						,cx
+						,cy
+						,ord
+						,STUFF((
+								  SELECT ',' + cast(cx as varchar(20)) + ' ' + cast(cy as varchar(20))
+								  FROM gis_border_pizzahut_history b with (nolock)
+								  WHERE b.IDx = a.IDx
+								  -- 필수 조건
+								  and a.reg_date = b.reg_date
+								  and a.reg_time = b.reg_time
+								  order by ord asc, idx asc
+								  FOR XML PATH('')
+								),1,1,'') as dd
+						,RnAsc = ROW_NUMBER() OVER(PARTITION BY idx ORDER BY ord ASC)
+						,RnDesc = ROW_NUMBER() OVER(PARTITION BY idx ORDER BY ord DESC)
+						,'system' as reg_id
+						,convert(varchar(8), GETDATE()+1, 112) as reg_date
+						,replace(CONVERT(varchar(8), getdate()+1, 108), ':', '') as reg_time
+						,'system' as upd_id
+						,convert(varchar(8), GETDATE()+1, 112) as upd_date
+						,replace(CONVERT(varchar(8), getdate()+1, 108), ':', '') as upd_time
+				FROM gis_border_pizzahut_history A with (nolock)
+				where 1=1
+
+				and A.reg_date = @today
+			)
+
+
+
+			select C.brand_cd as 'brand_cd'
+				   ,C.idx  as'idx'
+				   ,case when RIGHT(C.dd, LEN(C.cxcy)) != C.cxcy then C.dd + ',' + C.cxcy else C.dd end as poly
+				   ,case when LEN(C.dd) = LEN(C.cxcy) then '' else Geometry::STGeomFromText('POLYGON((' + case when RIGHT(C.dd, LEN(C.cxcy)) != C.cxcy then C.dd + ',' + C.cxcy else C.dd end + '))',0).STIsValid() end as 'is_valid'
+				   ,reg_date
+			from (
+					select B.brand_cd
+						   ,B.idx
+						   ,B.dd
+						   ,B.cxcy
+						   ,reg_id, reg_date, reg_time, upd_id, upd_date, upd_time
+					from (
+
+							select  FB.brand_cd
+									,FB.idx
+									,FB.dd
+									,cast(FB.cx as varchar(20)) + ' ' + cast(FB.cy as varchar(20)) as cxcy
+									,FB.RnAsc
+									,reg_id, reg_date, reg_time, upd_id, upd_date, upd_time
+							FROM FB with (nolock)
+							WHERE 1=1
+							and   FB.RnAsc = 1
+						) B
+				) C
+
+    </select>
+
+    <resultMap id="borderListCheck" type="com.alan.monitor1.order.Border">
+        <result property="brand_cd" column="brand_cd"/>
+        <result property="idx" column="idx"/>
+        <result property="poly" column="poly"/>
+        <result property="is_valid" column="is_valid"/>
+        <result property="reg_date" column="reg_date"/>
+
+    </resultMap>
+
+	<select id="selectPolyList" resultType="com.alan.monitor1.order.Border" resultMap="borderListCheck">
+
+		SELECT
+			BRAND_CD as brand_cd
+			,IDX as idx
+			,POLY as poly
+-- 			,CAST('POLYGON((' + Poly + '))' as geometry) as geometry
+			,is_valid as is_valid
+			,REG_DATE as reg_date
+			,REG_TIME as reg_time
+		from gis_border_poly_history with(nolock)
+		where reg_date = '20200710'
+		and idx like '%8808%'
+-- 		and reg_date = '20200710'
+
+	</select>
+
+	<select id="selectPolyList2" resultType="com.alan.monitor1.order.Border" resultMap="borderListCheck">
+
+		SELECT
+		BRAND_CD as brand_cd
+		,IDX as idx
+		,POLY as poly
+		-- 			,CAST('POLYGON((' + Poly + '))' as geometry) as geometry
+		,is_valid as is_valid
+		,REG_DATE as reg_date
+		,REG_TIME as reg_time
+		from gis_border_poly_history with(nolock)
+		where reg_date = '20200720'
+		and idx like '%8808%'
+
+	</select>
+
+	<select id="selectMinMaxPoint" resultType="com.alan.monitor1.gis.MinMaxPoint" resultMap="minmax">
+
+		select max(cx) as utmk_max_x
+			,min(cx) as utmk_min_x
+			,max(cy) as utmk_max_y
+			,min(cy)  as utmk_min_y
+		from gis_border_pizzahut_history with(nolock)
+		where idx like '%0737%'
+
+	</select>
+
+	<resultMap id="minmax" type="com.alan.monitor1.gis.MinMaxPoint">
+		<result property="utmk_max_x" column="utmk_max_x"/>
+		<result property="utmk_min_x" column="utmk_min_x"/>
+		<result property="utmk_max_y" column="utmk_max_y"/>
+		<result property="utmk_min_y" column="utmk_min_y"/>
+
+	</resultMap>
+
+	<select id="getGisBorderList" resultType="com.alan.monitor1.order.Border" resultMap="bordermap">
+		select  brand_cd as brand_cd
+		,idx as idx
+		,Poly.ToString() as poly
+		,is_valid as is_valid
+
+		from GIS_BORDER_POLY with(nolock)
+
+		where 1=1
+
+		<!--<if test="!@org.springframework.util.StringUtils@isEmpty(brand_cd)">-->
+			and BRAND_CD = #{brand_cd}
+		<!--</if>-->
+		<!--<if test="!@org.springframework.util.StringUtils@isEmpty(idx)">-->
+			and IDX ='0737V-02'
+ 		<!--</if>-->
+			and reg_date = '20200720'
+		order by BRAND_CD, IDX
+
+	</select>
+
+	<resultMap id="bordermap" type="com.alan.monitor1.order.Border">
+		<result property="brand_cd" column="brand_cd"/>
+		<result property="idx" column="idx"/>
+		<result property="poly" column="poly"/>
+		<result property="is_valid" column="is_valid"/>
+
+	</resultMap>
+
+</mapper>

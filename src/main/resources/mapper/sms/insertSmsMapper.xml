@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.alan.monitor1.mapper1.SmsMapper">
+
+	<select	id="selectSms" resultType="int">
+
+		SELECT count(*)
+		  FROM msg_queue with(nolock)
+		  where 1=1
+		  and mseq ='1315873'
+	</select>
+
+    <insert id="insertSms"  parameterType="String">
+		insert into msg_queue
+			(
+				 msg_type
+				,dstaddr
+				,callback
+				,stat
+				,text
+				,request_time
+			)
+		values
+			(
+				 '1'
+				,'01031370577'
+				,'16707447'
+				,'0'
+				,#{msg}
+				,GETDATE()
+			),
+			(
+				 '1'
+				,'01049070531'
+				,'16707447'
+				,'0'
+				,#{msg}
+				,GETDATE()
+			)
+
+    </insert>
+
+
+</mapper>

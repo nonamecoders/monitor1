@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.alan.monitor1.mapper.OrderMapper">
+
+    <!--<select id="orderList"  resultType="com.alan.monitor1.order.Order" resultMap="orderListCheck">-->
+
+        <!--declare @startDate varchar(10) = CONVERT(varchar(8),getdate(), 112);-->
+        <!--declare @endDate varchar(10) = CONVERT(varchar(8),getdate(), 112);-->
+
+
+        <!--select  BM.BRAND_CD as brand_cd-->
+                <!--,BM.BRAND_NM as brand_nm-->
+                <!--,CM.COUPON_ID as coupon_id-->
+                <!--,STUFF(-->
+                        <!--(select case-->
+                            <!--when-->
+                                <!--START_DATE <![CDATA[<=]]> @endDate and &#45;&#45; 유효기간-->
+                                <!--END_DATE <![CDATA[>=]]> @startDate and &#45;&#45; 유효기간-->
+                                <!--COUPON_TYPE = 'PE' then '/' + cast(DC_VALUE as varchar) + '%'-->
+                            <!--when-->
+                                <!--START_DATE <![CDATA[<=]]> @endDate and &#45;&#45; 유효기간-->
+                                <!--END_DATE <![CDATA[>=]]> @startDate and &#45;&#45; 유효기간-->
+                                <!--COUPON_TYPE = 'PR' then '/' + replace( convert( VARCHAR, convert( MONEY, cast(dc_value as varchar) ), 1 ), '.00', '' ) + '원'-->
+                            <!--end-->
+                        <!--from TB_COUPON_MASTER where BRAND_CD = BM.BRAND_CD and COUPON_ID = CM.COUPON_ID for xml path(''))-->
+                        <!--,1,1,'') as discount-->
+                <!--,COUNT(COUPON_ORDER.all_order_id) as total_order-->
+                <!--,COUNT(COUPON_ORDER.normal_order_id) as real_order-->
+                <!--,(COUNT(COUPON_ORDER.all_order_id) - COUNT(COUPON_ORDER.normal_order_id)) as cancel_order-->
+                <!--from TB_BRAND_MASTER BM with(nolock)-->
+                <!--inner join (-->
+                                <!--select BRAND_CD-->
+                                <!--,COUPON_ID-->
+                                <!--from TB_COUPON_MASTER with(nolock)-->
+                                <!--where 1=1-->
+                                <!--and BRAND_CD != 'KAKAO'-->
+                                <!--and START_DATE <![CDATA[<=]]> @endDate-->
+                                <!--and END_DATE <![CDATA[>=]]> @startDate-->
+                                <!--and IS_USE = 'Y'-->
+                                <!--group by BRAND_CD, COUPON_ID-->
+                  <!--) CM &#45;&#45; 유효기간이 주어진 기간값과 겹치는 쿠폰 정보-->
+                  <!--on CM.BRAND_CD = BM.BRAND_CD-->
+                <!--left outer join (-->
+                                    <!--select PD.K_ORDER_ID as all_order_id  &#45;&#45; 전체 주문번호들-->
+                                    <!--,PD.BRAND_CD-->
+                                    <!--,PD.COUPON_ID-->
+                                    <!--,OS.K_ORDER_ID as normal_order_id &#45;&#45; 정상 주문번호들-->
+                                    <!--from TB_PAY_DETAIL PD with(nolock)-->
+                                    <!--left outer join TB_ORDER_STATE OS with(nolock)-->
+                                    <!--on OS.K_ORDER_ID = PD.K_ORDER_ID-->
+                                    <!--and OS.ORDER_STATE not in ('B', 'C', 'Q', 'Z', 'X') &#45;&#45; 취소 주문 상태-->
+                                    <!--where 1=1-->
+                                    <!--and PD.REG_DATE between @startDate and @endDate-->
+                <!--) COUPON_ORDER  &#45;&#45; 쿠폰 주문 정보-->
+              <!--on COUPON_ORDER.BRAND_CD = CM.BRAND_CD and COUPON_ORDER.COUPON_ID = CM.COUPON_ID-->
+        <!--group by BM.BRAND_CD, BM.BRAND_NM, CM.COUPON_ID-->
+
+    <!--</select>-->
+    <select id="orderList"  resultType="com.alan.monitor1.order.Order" resultMap="orderListCheck">
+        <choose>
+            <when test="start_date != null and end_date != null">
+                declare @startDate varchar(10) = #{start_date};
+                declare @endDate varchar(10) = #{end_date};
+            </when>
+            <otherwise>
+                declare @startDate varchar(10) = CONVERT(varchar(8),getdate(), 112);
+                declare @endDate varchar(10) = CONVERT(varchar(8),getdate(), 112);
+            </otherwise>
+        </choose>
+
+        select  BM.BRAND_CD as brand_cd
+                ,BM.BRAND_NM as brand_nm
+                ,CM.COUPON_ID as coupon_id
+                ,STUFF(
+                        (select case
+                        when
+                            START_DATE <![CDATA[<=]]> @endDate and -- 유효기간
+                            END_DATE <![CDATA[>=]]> @startDate and -- 유효기간
+                            COUPON_TYPE = 'PE' then '/' + cast(DC_VALUE as varchar) + '%'
+                        when
+                            START_DATE <![CDATA[<=]]> @endDate and -- 유효기간
+                            END_DATE <![CDATA[>=]]> @startDate and -- 유효기간
+                            COUPON_TYPE = 'PR' then '/' + replace( convert( VARCHAR, convert( MONEY, cast(dc_value as varchar) ), 1 ), '.00', '' ) + '원'
+                        end
+                        from TB_COUPON_MASTER where BRAND_CD = BM.BRAND_CD and COUPON_ID = CM.COUPON_ID for xml path(''))
+                        ,1,1,'') as discount
+                ,COUNT(COUPON_ORDER.all_order_id) as total_order
+                ,COUNT(COUPON_ORDER.normal_order_id) as real_order
+                ,(COUNT(COUPON_ORDER.all_order_id) - COUNT(COUPON_ORDER.normal_order_id)) as cancel_order
+                from TB_BRAND_MASTER BM with(nolock)
+                inner join (
+                                select BRAND_CD
+                                ,COUPON_ID
+                                from TB_COUPON_MASTER with(nolock)
+                                where 1=1
+                                    and BRAND_CD != 'KAKAO'
+                                    and START_DATE <![CDATA[<=]]> @endDate
+                                    and END_DATE <![CDATA[>=]]> @startDate
+                                    and IS_USE = 'Y'
+                                group by BRAND_CD, COUPON_ID
+                    ) CM -- 유효기간이 주어진 기간값과 겹치는 쿠폰 정보
+                on CM.BRAND_CD = BM.BRAND_CD
+                left outer join (
+                                    select PD.K_ORDER_ID as all_order_id  -- 전체 주문번호들
+                                            ,PD.BRAND_CD
+                                            ,PD.COUPON_ID
+                                            ,OS.K_ORDER_ID as normal_order_id -- 정상 주문번호들
+                                    from TB_PAY_DETAIL PD with(nolock)
+                                    left outer join TB_ORDER_STATE OS with(nolock)
+                                    on OS.K_ORDER_ID = PD.K_ORDER_ID
+                                      and OS.ORDER_STATE not in ('B', 'C', 'Q', 'Z', 'X') -- 취소 주문 상태
+                                    where 1=1
+                                      and PD.REG_DATE between @startDate and @endDate
+                ) COUPON_ORDER  -- 쿠폰 주문 정보
+              on COUPON_ORDER.BRAND_CD = CM.BRAND_CD and COUPON_ORDER.COUPON_ID = CM.COUPON_ID
+
+
+        group by BM.BRAND_CD, BM.BRAND_NM, CM.COUPON_ID
+
+    </select>
+    <resultMap id="orderListCheck" type="com.alan.monitor1.order.Order">
+        <result property="brand_cd" column="brand_cd"/>
+        <result property="brand_nm" column="brand_nm"/>
+        <result property="coupon_id" column="coupon_id"/>
+        <result property="discount" column="discount"/>
+        <result property="total_order" column="total_order"/>
+        <result property="real_order" column="real_order"/>
+        <result property="cancel_order" column="cancel_order"/>
+    </resultMap>
+
+    <insert id="batchExecute" parameterType="com.alan.monitor1.order.SPCShortage" >
+        MERGE INTO TB_PRODUCT_SHORTAGE as T1
+        USING (
+        SELECT #{brand_cd} as BRAND_CD, #{branch_id} as BRANCH_ID, #{item_cd} as ITEM_CD
+        ) AS T2
+        ON
+        (
+        T1.BRAND_CD = T2.BRAND_CD
+        AND
+        T1.ITEM_CD = T2.ITEM_CD
+        AND
+        T1.BRANCH_ID = T2.BRANCH_ID
+        )
+        WHEN MATCHED THEN
+        UPDATE
+        SET
+        SHORTAGE_CD = '01'
+        ,SHORT_START_DATE = CONVERT(VARCHAR(8), GETDATE(), 112)
+        ,SHORT_START_TIME = REPLACE(CONVERT(VARCHAR(10), GETDATE(), 108), ':', '')
+        ,SHORT_END_DATE = CONVERT(VARCHAR(8), GETDATE(), 112)
+        ,SHORT_END_TIME = '235959'
+        ,UPD_ID = 'CMS'
+        ,UPD_DATE = CONVERT(VARCHAR(8), GETDATE(), 112)
+        ,UPD_TIME = REPLACE(CONVERT(VARCHAR(10), GETDATE(), 108), ':', '')
+        WHEN NOT MATCHED THEN
+        INSERT
+        (BRAND_CD, ITEM_CD, BRANCH_ID, SHORTAGE_CD, SHORT_START_DATE, SHORT_END_DATE, SHORT_START_TIME, SHORT_END_TIME, SHORT_MEMO, REG_ID, REG_DATE, REG_TIME, UPD_ID, UPD_DATE, UPD_TIME)
+        VALUES
+        (#{brand_cd}, #{item_cd}, #{branch_id}, '01',
+        CONVERT(VARCHAR(8), GETDATE(), 112), CONVERT(VARCHAR(8), GETDATE(), 112), REPLACE(CONVERT(VARCHAR(10), GETDATE(), 108), ':', ''), '235959', null,
+        'CMS', CONVERT(VARCHAR(8), GETDATE(), 112), REPLACE(CONVERT(VARCHAR(10), GETDATE(), 108), ':', ''),
+        'CMS', CONVERT(VARCHAR(8), GETDATE(), 112), REPLACE(CONVERT(VARCHAR(10), GETDATE(), 108), ':', ''));
+    </insert>
+
+
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.alan.monitor1.mapper.OrderItemMapper">
+
+    <select id="orderItem"  resultType="int" >
+
+
+
+    select count(*) From TB_ORDER_ITEM with(nolock)
+    where 1=1
+        and BRAND_CD ='mrpizza'
+        and ITEM_CD in ('0501020680'
+        ,'0501020690'
+        ,'0501020710'
+        ,'0501020700'
+        ,'0501020780'
+        ,'0501020720'
+        ,'0501020750'
+        ,'0501020740'
+        ,'0501020730'
+        ,'0501020760'
+        ,'0501020770'
+        )
+
+    </select>
+
+
+</mapper>
