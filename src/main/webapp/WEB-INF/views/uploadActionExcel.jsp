@@ -222,6 +222,39 @@
             }
         }
 
+        function gisExcelUpload(){
+            let upFile = $('#file')[0];
+            // upFile.addEventListener('change', function() {
+                let form = $('#formUpload')[0];
+                let frmData = new FormData(form);
+
+                $.ajax({
+                    enctype: 'multipart/form-data',
+                    type: 'POST',
+                    url: '/uploadExcel',
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    data: frmData,
+                    dataType: 'json',
+                    async: false,
+                    success: function(data) {
+                        console.log(data);
+                        if(data.) {
+                            alert("upload success.");
+                            location.reload();
+                        } else {
+                            alert("upload fail.");
+                        }
+                    },
+                    error: function(e,data) {
+                        console.log(data);
+                        alert('파일업로드 실패');
+                        location.href ="/";
+                    }
+                });
+            // });
+        }
     </script>
 </head>
 <body>
@@ -230,15 +263,16 @@
 </div>
 <div style="padding:20px">
     <h2>step1. gis_pizzahut_border_history DB 입력</h2>
-    <form name="formUpload" action="uploadActionExcel" method="post" enctype="multipart/form-data" onsubmit="return checkForm(file)">
+<%-- name to id, action="uploadActionExcel" method="post" "  --%>
+    <form id="formUpload" enctype="multipart/form-data">
         <div style="margin:20px 0;">
             <div style="padding:10px;border: 1px solid #c4c4c4;border-radius:10px;vertical-align:middle;">
                 <label style="display:inline-block;margin-bottom:10px;font-size:10pt;vertical-align:middle;">엑셀파일 업로드 : </label>
-                <input type="file" name="file" style="width:100%;" />
+                <input type="file" id="file" name="file" style="width:100%;" />
             </div>
         </div>
         <div style="text-align:right;">
-            <input type="submit" value="업로드" style="display: inline-block;padding: 10px 25px;line-height: 18px;background: #4c4c4c;border: 1px solid #c4c4c4;border-radius: 3px;text-align: center;vertical-align: middle;box-sizing: border-box;color:#fff;cursor:pointer;"/>
+            <input onclick="gisExcelUpload()" value="업로드" style="display: inline-block;padding: 10px 25px;line-height: 18px;background: #4c4c4c;border: 1px solid #c4c4c4;border-radius: 3px;text-align: center;vertical-align: middle;box-sizing: border-box;color:#fff;cursor:pointer;"/>
         </div>
     </form>
 <%--멀티 업로드--%>

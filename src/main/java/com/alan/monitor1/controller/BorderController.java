@@ -1,21 +1,34 @@
 package com.alan.monitor1.controller;
 
-import com.alan.monitor1.gis.GeoPoint;
-import com.alan.monitor1.gis.GeoTrans;
-import com.alan.monitor1.gis.MinMaxPoint;
-import com.alan.monitor1.gis.Point;
+import com.alan.monitor1.gis.*;
 import com.alan.monitor1.order.Border;
 import com.alan.monitor1.service.BorderService;
+import com.alan.monitor1.util.JSONUtils;
+import com.oreilly.servlet.MultipartRequest;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.operation.valid.IsValidOp;
+import org.locationtech.jts.operation.valid.TopologyValidationError;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import java.io.FileInputStream;
+import java.util.*;
 
 
 @Controller
@@ -282,6 +295,233 @@ public class BorderController {
 
         return null;
     }
+
+
+    @RequestMapping(value = "/uploadExcel", method = RequestMethod.POST)
+    @ResponseBody
+    public Map uploadExcel(HttpServletRequest request, RedirectAttributes redirectAttributes) {
+
+        Map<String,Object> result = new HashMap<>();
+        try {
+
+            String storeId, zoneId, vtxNo;
+            Double utmkX, utmkY;
+
+            String savePath = request.getSession().getServletContext().getRealPath("/") + "upload";
+
+            int sizeLimit = 30 * 1024 * 1024;
+            String formName = "";
+            String fileName = "";
+
+            long fileSize = 0;
+
+            List<testob> test = new ArrayList<>();
+
+            XSSFRow row = null;
+            XSSFCell cell = null;
+
+            MultipartRequest multipartRequest = new MultipartRequest(request, savePath,sizeLimit,"UTF-8");
+
+            Enumeration formNames = multipartRequest.getFileNames();
+            while(formNames.hasMoreElements()){
+                formName = (String) formNames.nextElement();
+                fileName = multipartRequest.getFilesystemName(formName);
+
+                if(fileName != null){
+                    fileSize = multipartRequest.getFile(formName).length();
+                }
+            }
+
+            XSSFWorkbook workbook = new XSSFWorkbook(new FileInputStream(savePath + "/" + fileName));
+            XSSFSheet sheet = workbook.getSheetAt(0);
+
+            int rows = sheet.getPhysicalNumberOfRows();
+
+            for(int index =1 ; index < rows; index++){
+
+                if(sheet.getRow(index) == null)
+                    break;
+                row = sheet.getRow(index);
+
+                if(row.getCell(0) == null || row.getCell(0).equals("")){
+
+                    System.out.println(
+                            "====================================================================================================");
+                    System.out.println(row.getRowNum() + " Row IDX 값 Null");
+                    System.out.println(
+                            "====================================================================================================");
+
+                    continue;
+
+                }
+
+                storeId = getExcelValueToString(row, 0);
+//                System.out.println(storeId);
+                zoneId = getExcelValueToString(row, 1);
+//                System.out.println(zoneId);
+                vtxNo = getExcelValueToString(row, 2);
+//                System.out.println(vtxNo);
+                utmkX = row.getCell(3).getNumericCellValue();
+//                System.out.println(utmkX);
+                utmkY = row.getCell(4).getNumericCellValue();
+//                System.out.println(utmkY);
+
+                test.add(new testob(
+                        (storeId.indexOf(".") > -1 ? storeId.substring(0, storeId.indexOf(".")) : storeId) + zoneId,
+                        vtxNo, utmkX, utmkY));
+
+                // Insert 데이터 확인
+                /*
+                 * System.out.println("storeId : " + storeId + " / " + "zoneId : " + zoneId +
+                 * " / " + "vtxNo : " + vtxNo + " / " + "utmkX : " + utmkX + " / " + "utmkY : "
+                 * + utmkY);
+                 */
+
+            }
+
+            // UTMK Excel Row 개수 출력
+            System.out.println(
+                    "====================================================================================================");
+            System.out.println(" UTMK Excel Row Count (Header 제외) : " + test.size());
+            System.out.println(
+                    "====================================================================================================");
+
+            List<TransPoint> transPointList = new ArrayList<>();
+
+            // UTMK > KAINESS 좌표로 변환
+            for (testob ob : test) {
+                GeoPoint in_pt = new GeoPoint(ob.getOrigin_x(), ob.getOrigin_y());
+                GeoPoint katec_pt = GeoTrans.convert(GeoTrans.UTMK, GeoTrans.KATEC, in_pt);
+
+                ob.setTrans_x(katec_pt.getX());
+                ob.setTrans_y(katec_pt.getY());
+
+                // 변환된 KAINESS 좌표 넣기
+                /*
+                 * strIdx = ob.idx; strOrd = (int) Double.parseDouble(ob.ord); strCx =
+                 * Integer.parseInt(String.valueOf(Math.round(ob.trans_x))); strCy =
+                 * Integer.parseInt(String.valueOf(Math.round(ob.trans_y)));
+                 */
+
+//                System.out.println(JSONUtils.toJson(ob));
+                TransPoint transPoint = new TransPoint();
+                transPoint.setIdx(ob.getIdx());
+                transPoint.setPointX((int) ob.getTrans_x());
+                transPoint.setPointY((int) ob.getTrans_y());
+
+                transPointList.add(transPoint);
+
+            }
+
+//            System.out.println(JSONUtils.toJson(transPointList));
+
+            StringBuffer sb = new StringBuffer();
+            Map<String,String> map = new LinkedHashMap();
+
+            for(TransPoint transPoint : transPointList){
+                String point = transPoint.getPointX() + " " + transPoint.getPointY();
+                if(map.get(transPoint.getIdx()) == null){
+                    map.put(transPoint.getIdx(),point);
+                } else {
+                    map.put(transPoint.getIdx(),map.get(transPoint.getIdx())+","+point);
+                }
+            }
+            System.out.println(JSONUtils.toJson(map));
+
+            int valid_count = 0;
+            int total_count = 0;
+            Set<String> set = new HashSet<>();
+            if(!map.isEmpty()){
+                for(String key : map.keySet()){
+                    total_count++;
+                    if(!isValidationGeometry(map.get(key))) {
+                        System.out.println("idx : [" + key + "] 해당 권역은 유효하지 않습니다.");
+                        set.add(key);
+                    } else{
+                        valid_count++;
+                        System.out.println("idx : [" + key + "] 해당 권역은 유효합니다.");
+                    }
+                }
+
+                if(total_count != valid_count){
+
+                    result.put("code","E0001");
+                    System.out.println("실패");
+                    return result;
+                }
+            }
+
+        } catch (Exception ex){
+            System.out.println(ex.getMessage());
+        }
+
+        System.out.println("성공");
+        result.put("code","S0000");
+        return result;
+    }
+
+
+    String getExcelValueToString(XSSFRow row, int i) throws Exception {
+
+        try {
+
+            return (row.getCell(i).getCellType() == HSSFCell.CELL_TYPE_NUMERIC)
+                    ? Double.toString(row.getCell(i).getNumericCellValue())
+                    : row.getCell(i).getStringCellValue();
+
+        } catch (NullPointerException e) {
+
+            System.out.println(
+                    "====================================================================================================");
+            System.out.println("Excel 빈값 체크 : " + row.getRowNum() + " Row : " + i + " (Cell)");
+            System.out.println(
+                    "====================================================================================================");
+
+            throw new Exception();
+        }
+
+    }
+
+    private static String replaceLast(String string, String toReplace, String replacement) {
+
+        int pos = string.lastIndexOf(toReplace);
+
+        if (pos > -1) {
+
+            return string.substring(0, pos) + replacement + string.substring(pos + toReplace.length(), string.length());
+
+        } else {
+
+            return string;
+
+        }
+
+    }
+
+    public boolean isValidationGeometry(String poly) {
+
+        boolean result = false;
+
+        try {
+            WKTReader wktr = new WKTReader();
+            Geometry geom = (Polygon) wktr.read("POLYGON (( " + poly + "))");
+
+            IsValidOp validOp = new IsValidOp(geom);
+            TopologyValidationError error = validOp.getValidationError();
+
+            if(error != null)
+                result = false;
+            else
+                result = true;
+
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+            result = false;
+        } finally {
+            return result;
+        }
+    }
+
 
 
 

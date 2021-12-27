@@ -157,4 +157,20 @@
 
 	</resultMap>
 
+	<insert id="insertPolyHistory" parameterType="hashMap">
+		INSERT INTO ALAN_DB.dbo.gis_border_poly_history
+		(BRAND_CD
+		, IDX
+		, POLY
+		, IS_VALID
+		, REG_ID
+		, REG_DATE
+		, REG_TIME
+		, UPD_ID
+		, UPD_DATE
+		, UPD_TIME)
+		VALUES('', '', '', 0, '', '', '', '', '', '');
+
+	</insert>
+
 </mapper>

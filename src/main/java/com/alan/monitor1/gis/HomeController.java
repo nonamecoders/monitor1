@@ -3,25 +3,18 @@ package com.alan.monitor1.gis;
 import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 
 import com.alan.monitor1.common.AES256Util;
-import com.alan.monitor1.spc.ReceiptOfSpc;
-import com.alan.monitor1.util.CipherUtil;
 import com.alan.monitor1.util.JSONUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,22 +24,15 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.microsoft.sqlserver.jdbc.SQLServerException;
 import com.oreilly.servlet.MultipartRequest;
 import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import sun.misc.Request;
-import sun.security.krb5.internal.crypto.Aes256;
 
 
 @Controller
@@ -64,10 +50,10 @@ public class HomeController {
 //     *
 //     * Connection conn = null; PreparedStatement pstmt = null; ResultSet rs = null;
 //     *
-//     * String ip = "10.190.10.121"; String port = "1433"; String user = "sa"; String
-//     * pass = "1q2w3e4r5t"; String db_name = "yang"; //String ip = "10.210.2.70";
-//     * String ip = "222.233.18.70"; String port = "8934"; String user = "kakao";
-//     * String pass = "CNTzkzkdh2017)!!"; String db_name = "CMS_KAKAO_NEW"; //
+//     * String ip = ""; String port = ""; String user = ""; String
+//     * pass = ""; String db_name = ""; //String ip = "";
+//     * String ip = ""; String port = ""; String user = "";
+//     * String pass = ""; String db_name = ""; //
 //     * =============================================================================
 //     * ======================
 //     *
@@ -155,8 +141,8 @@ public class HomeController {
 //     * ===== Connection conn = null; PreparedStatement pstmt = null; ResultSet rs =
 //     * null;
 //     *
-//     * String ip = "211.219.135.19"; String port = "1433"; String user = "kakao_cs";
-//     * String pass = "CS_kakao17)(*"; String db_name = "SMS_SK"; //
+//     * String ip = ""; String port = ""; String user = "";
+//     * String pass = ""; String db_name = ""; //
 //     * =============================================================================
 //     * ======================
 //     *
@@ -307,8 +293,6 @@ public class HomeController {
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String home(Locale locale, Model model) throws Exception {
 
-//        logger.info("Welcome home! The client locale is {}."+"\n 오늘 날짜 : "+localdate+" 실행한 시간 : "+localtime, locale);
-
         // 표준시간(협정 세계시 (UTC))을 기준으로한 현재 시간을 Long형으로 변환
         Date date = new Date();
         DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale);
@@ -381,19 +365,19 @@ public class HomeController {
 
             /*알파*/
 
-			 String ip = "211.200.4.166";
-			 String port = "12433";
-			 String user = "cntt";
-			 String pass = "Tldpsxlroqkfwk@)!^";
-			 String db_name = "CMS_KAKAO_NEW";
+//			 String ip = "211.200.4.166";
+//			 String port = "12433";
+//			 String user = "cntt";
+//			 String pass = "Tldpsxlroqkfwk@)!^";
+//			 String db_name = "CMS_KAKAO_NEW";
 
             /*로컬*/
 //
-//            String ip = "localhost";
-//            String port = "1433";
-//            String user = "cntt";
-//            String pass = "Tldpsxlroqkfwk@)!^";
-//            String db_name = "CMS_KAKAO_NEW_ALAN";
+            String ip = "";
+            String port = "";
+            String user = "";
+            String pass = "";
+            String db_name = "";
 
             // ===================================================================================================
 
@@ -444,11 +428,11 @@ public class HomeController {
                     continue;
                 }
 
-                storeId = getExcelVelueToString(row, 0);
+                storeId = getExcelValueToString(row, 0);
 //                System.out.println(storeId);
-                zoneId = getExcelVelueToString(row, 1);
+                zoneId = getExcelValueToString(row, 1);
 //                System.out.println(zoneId);
-                vtxNo = getExcelVelueToString(row, 2);
+                vtxNo = getExcelValueToString(row, 2);
 //                System.out.println(vtxNo);
                 utmkX = row.getCell(3).getNumericCellValue();
 //                System.out.println(utmkX);
@@ -600,7 +584,7 @@ public class HomeController {
 
     }
 
-    private String getExcelVelueToString(XSSFRow row, int i) throws Exception {
+     String getExcelValueToString(XSSFRow row, int i) throws Exception {
 
         try {
 
@@ -1002,6 +986,7 @@ public class HomeController {
         return mav;
 
     }
+
 
 
 
