@@ -1,8 +1,11 @@
 package com.alan.monitor1.service;
 
+import com.alan.monitor1.gis.Gis;
 import com.alan.monitor1.gis.MinMaxPoint;
 import com.alan.monitor1.mapper.BorderMapper;
 import com.alan.monitor1.order.Border;
+import com.alan.monitor1.repository.GisRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

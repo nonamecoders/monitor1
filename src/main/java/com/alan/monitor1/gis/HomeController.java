@@ -39,7 +39,7 @@ import org.springframework.web.servlet.ModelAndView;
 public class HomeController {
 
 //    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(HomeController.class);
-    static String localdate = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);//yyyymmdd
+    static String localdate = LocalDate.now().plusDays(1).format(DateTimeFormatter.BASIC_ISO_DATE);//yyyymmdd
     static String localtime = (String) new SimpleDateFormat("HHmmss").format(new java.util.Date());
 
 //    /*
@@ -365,19 +365,19 @@ public class HomeController {
 
             /*알파*/
 
-//			 String ip = "211.200.4.166";
-//			 String port = "12433";
-//			 String user = "cntt";
-//			 String pass = "Tldpsxlroqkfwk@)!^";
-//			 String db_name = "CMS_KAKAO_NEW";
+			 String ip = "211.200.4.166";
+			 String port = "12433";
+			 String user = "cntt";
+			 String pass = "Tldpsxlroqkfwk@)!^";
+			 String db_name = "CMS_KAKAO_NEW";
 
             /*로컬*/
 //
-            String ip = "";
-            String port = "";
-            String user = "";
-            String pass = "";
-            String db_name = "";
+//            String ip = "localhost";
+//            String port = "1433";
+//            String user = "cntt";
+//            String pass = "Tldpsxlroqkfwk@)!^";
+//            String db_name = "CMS_KAKAO_NEW_ALAN";
 
             // ===================================================================================================
 

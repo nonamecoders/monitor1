@@ -116,7 +116,7 @@
 			,max(cy) as utmk_max_y
 			,min(cy)  as utmk_min_y
 		from gis_border_pizzahut_history with(nolock)
-		where idx like '%0737%'
+		where idx like '%8808%'
 
 	</select>
 
@@ -172,5 +172,6 @@
 		VALUES('', '', '', 0, '', '', '', '', '', '');
 
 	</insert>
+
 
 </mapper>

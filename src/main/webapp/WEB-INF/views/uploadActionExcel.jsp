@@ -223,15 +223,16 @@
         }
 
         function gisExcelUpload(){
-            let upFile = $('#file')[0];
+            var upFile = $('#file')[0];
             // upFile.addEventListener('change', function() {
-                let form = $('#formUpload')[0];
-                let frmData = new FormData(form);
+                var form = $('#formUpload')[0];
+                var frmData = new FormData(form);
 
                 $.ajax({
                     enctype: 'multipart/form-data',
                     type: 'POST',
                     url: '/uploadExcel',
+                    // url: '/uploadActionExcel',
                     processData: false,
                     contentType: false,
                     cache: false,
@@ -240,7 +241,8 @@
                     async: false,
                     success: function(data) {
                         console.log(data);
-                        if(data.) {
+                        var code = data.code;
+                        if(code == "S0000") {
                             alert("upload success.");
                             location.reload();
                         } else {

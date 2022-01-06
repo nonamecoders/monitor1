@@ -2,6 +2,7 @@ package com.alan.monitor1.controller;
 
 import com.alan.monitor1.gis.*;
 import com.alan.monitor1.order.Border;
+import com.alan.monitor1.service.BorderJPAService;
 import com.alan.monitor1.service.BorderService;
 import com.alan.monitor1.util.JSONUtils;
 import com.oreilly.servlet.MultipartRequest;
@@ -15,6 +16,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.operation.valid.IsValidOp;
 import org.locationtech.jts.operation.valid.TopologyValidationError;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,19 +30,30 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.FileInputStream;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
 @Controller
 public class BorderController {
+
+    static String localdate = LocalDate.now().plusDays(1).format(DateTimeFormatter.BASIC_ISO_DATE);//yyyymmdd
+    static String localtime = (String) new SimpleDateFormat("HHmmss").format(new java.util.Date());
+
     @Resource(name="com.alan.monitor1.service.BorderService")
     BorderService mBorderService;
+
+    @Resource(name="com.alan.monitor1.service.BorderJPAService")
+    BorderJPAService borderJPAService;
 
     @RequestMapping("/borderList") //게시판 리스트 화면 호출
     private String borderList(Model model) throws Exception{
 
         model.addAttribute("list",mBorderService.borderListService());
         return "borderList";
+
     }
 
 //    @RequestMapping(name="/uploadExcel", method = RequestMethod.POST)
@@ -63,52 +76,52 @@ public class BorderController {
         //중심좌표
         MinMaxPoint minMaxPoint = mBorderService.selectMinMaxPoint();
         MinMaxPoint.CenterPoint centerPoint =  caculateCenterPoint(minMaxPoint);
+        System.out.println(centerPoint);
         model.addAttribute("center",centerPoint);
 
         //katech => wgs84
-//        List<Point> pointList = katech_to_wgs_84(borderList);
-//        List<Point> pointList2 = katech_to_wgs_84(borderList2);
-//        System.out.println("**********************************************");
-//        System.out.println("pointList : " + pointList);
-//        System.out.println("**********************************************");
-//        List<Border> pizzahut_wgs4 = new ArrayList<>();
-//
-//        // wgs84 => katech  (pointList = wgs84)
-//        if(!pointList.isEmpty()){
-//
-//            Border border;
-//            for(Point point : pointList){
-//
-//                border = new Border();
-//                border.setBrand_cd("PIZZAHUT");
-//                border.setIdx(point.getIdx());
-//                border.setIs_valid("1");
-//
-//                String poly ="";
-//
-//                int cnt_point =0;
-//                for(Point.Point_xy point_xy : point.getPoint()){
-//                    String lat_wgs84 =  String.valueOf(point_xy.getPoint_lat());
-//                    String long_wgs84 =  String.valueOf(point_xy.getPoint_long());
-//
-//                    cnt_point++;
-//
-//                    if (cnt_point != point.getPoint().size())
-//                        poly += long_wgs84 + " " + lat_wgs84 + ",";
-//                    else {
-//                        poly += long_wgs84 + " " + lat_wgs84;
-//                    }
-//
-//
-//                }
-//                border.setPoly(poly);
-//                pizzahut_wgs4.add(border);
-//            }
-//
-//            System.out.println(pizzahut_wgs4);
-//
-//
-//            Border border;
+        List<Point> pointList = katech_to_wgs_84(borderList);
+        List<Point> pointList2 = katech_to_wgs_84(borderList2);
+        System.out.println("**********************************************");
+        System.out.println("pointList : " + pointList);
+        System.out.println("**********************************************");
+        List<Border> pizzahut_wgs4 = new ArrayList<>();
+
+        // wgs84 => katech  (pointList = wgs84)
+        if(!pointList.isEmpty()){
+
+            Border border;
+            for(Point point : pointList){
+
+                border = new Border();
+                border.setBrand_cd("PIZZAHUT");
+                border.setIdx(point.getIdx());
+                border.setIs_valid("1");
+
+                String poly ="";
+
+                int cnt_point =0;
+                for(Point.Point_xy point_xy : point.getPoint()){
+                    String lat_wgs84 =  String.valueOf(point_xy.getPoint_lat());
+                    String long_wgs84 =  String.valueOf(point_xy.getPoint_long());
+
+                    cnt_point++;
+
+                    if (cnt_point != point.getPoint().size())
+                        poly += long_wgs84 + " " + lat_wgs84 + ",";
+                    else {
+                        poly += long_wgs84 + " " + lat_wgs84;
+                    }
+
+
+                }
+                border.setPoly(poly);
+                pizzahut_wgs4.add(border);
+            }
+
+            System.out.println(pizzahut_wgs4);
+
+
 //            for(Point point : pointList){
 //
 //                border = new Border();
@@ -163,20 +176,20 @@ public class BorderController {
 //                pizzahut_wgs4.add(border);
 //
 //            }
-//        }
+        }
 
         //기존
-//        List<Point> pizzahut = katech_to_wgs_84(pizzahut_wgs4);
-//
-//        //카카오
+        List<Point> pizzahut = katech_to_wgs_84(pizzahut_wgs4);
+
+        //카카오
 //        List<Point> pizzahut_kakao = wgs84_to_katech_kakao(pizzahut_wgs4);
 
 
 
-//        model.addAttribute("poly",pointList);
-//        model.addAttribute("poly2",pointList2);
+        model.addAttribute("poly",pointList);
+        model.addAttribute("poly2",pointList2);
         model.addAttribute("list",borderList);
-//        model.addAttribute("pizzahut",pizzahut);
+        model.addAttribute("pizzahut",pizzahut);
         return "polyList";
     }
 
@@ -446,7 +459,28 @@ public class BorderController {
                 if(total_count != valid_count){
 
                     result.put("code","E0001");
-                    System.out.println("실패");
+                    System.out.println("실패" + JSONUtils.toJson(set));
+                    return result;
+                } else {
+                    System.out.println("성공");
+                    // insert into history db
+
+                    for(String key : map.keySet()){
+                        borderJPAService.save(Gis.builder()
+                            .brand_cd("PIZZAHUT")
+                            .idx(key)
+                            .is_valid(1)
+                            .poly(map.get(key))
+                            .reg_id("alan")
+                            .reg_date(localdate)
+                            .reg_time(localtime)
+                            .upd_id("alan")
+                            .upd_date(localdate)
+                            .upd_time(localtime)
+                            .build());
+                    }
+
+                    result.put("code","S0000");
                     return result;
                 }
             }
@@ -455,8 +489,6 @@ public class BorderController {
             System.out.println(ex.getMessage());
         }
 
-        System.out.println("성공");
-        result.put("code","S0000");
         return result;
     }
 

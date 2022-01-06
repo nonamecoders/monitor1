@@ -87,6 +87,8 @@
 
     var center_point_lat = ${center.center_lat};
     var center_point_long = ${center.center_long};
+    console.log(center_point_lat);
+    console.log(center_point_long);
     <%--var center_point_lat = ${37.889277};--%>
     <%--var center_point_long = ${127.749568};--%>
     var mapContainer = document.getElementById('map'), // 지도를 표시할 div
