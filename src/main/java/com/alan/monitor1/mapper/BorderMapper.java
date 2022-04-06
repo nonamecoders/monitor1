@@ -1,8 +1,7 @@
 package com.alan.monitor1.mapper;
 
 import com.alan.monitor1.gis.MinMaxPoint;
-import com.alan.monitor1.order.Border;
-import com.alan.monitor1.order.Order;
+import com.alan.monitor1.gis.Border;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 

@@ -4,7 +4,7 @@
 
 <mapper namespace="com.alan.monitor1.mapper.BorderMapper">
 
-    <select id="borderList"  resultType="com.alan.monitor1.order.Border" resultMap="borderListCheck">
+    <select id="borderList" resultType="com.alan.monitor1.gis.Border" resultMap="borderListCheck">
 
 			declare @today varchar(8) = '20181127';
 
@@ -67,7 +67,7 @@
 
     </select>
 
-    <resultMap id="borderListCheck" type="com.alan.monitor1.order.Border">
+    <resultMap id="borderListCheck" type="com.alan.monitor1.gis.Border">
         <result property="brand_cd" column="brand_cd"/>
         <result property="idx" column="idx"/>
         <result property="poly" column="poly"/>
@@ -76,7 +76,7 @@
 
     </resultMap>
 
-	<select id="selectPolyList" resultType="com.alan.monitor1.order.Border" resultMap="borderListCheck">
+	<select id="selectPolyList" resultType="com.alan.monitor1.gis.Border" resultMap="borderListCheck">
 
 		SELECT
 			BRAND_CD as brand_cd
@@ -87,13 +87,13 @@
 			,REG_DATE as reg_date
 			,REG_TIME as reg_time
 		from gis_border_poly_history with(nolock)
-		where reg_date = '20200710'
-		and idx like '%8808%'
+		where reg_date = '20220305'
+		and idx like '%8874%'
 -- 		and reg_date = '20200710'
 
 	</select>
 
-	<select id="selectPolyList2" resultType="com.alan.monitor1.order.Border" resultMap="borderListCheck">
+	<select id="selectPolyList2" resultType="com.alan.monitor1.gis.Border" resultMap="borderListCheck">
 
 		SELECT
 		BRAND_CD as brand_cd
@@ -104,8 +104,8 @@
 		,REG_DATE as reg_date
 		,REG_TIME as reg_time
 		from gis_border_poly_history with(nolock)
-		where reg_date = '20200720'
-		and idx like '%8808%'
+		where reg_date = '20220304'
+		and idx like '%8874%'
 
 	</select>
 
@@ -128,7 +128,7 @@
 
 	</resultMap>
 
-	<select id="getGisBorderList" resultType="com.alan.monitor1.order.Border" resultMap="bordermap">
+	<select id="getGisBorderList" resultType="com.alan.monitor1.gis.Border" resultMap="bordermap">
 		select  brand_cd as brand_cd
 		,idx as idx
 		,Poly.ToString() as poly
@@ -149,7 +149,7 @@
 
 	</select>
 
-	<resultMap id="bordermap" type="com.alan.monitor1.order.Border">
+	<resultMap id="bordermap" type="com.alan.monitor1.gis.Border">
 		<result property="brand_cd" column="brand_cd"/>
 		<result property="idx" column="idx"/>
 		<result property="poly" column="poly"/>

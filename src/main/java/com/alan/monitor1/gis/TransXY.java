@@ -3,7 +3,7 @@ package com.alan.monitor1.gis;
 import lombok.Data;
 
 @Data
-public class testob {
+public class TransXY {
 
     String idx;
     String ord;
@@ -11,7 +11,8 @@ public class testob {
     double origin_y;
     double trans_x;
     double trans_y;
-    public testob(String idx, String ord, double origin_x, double origin_y) {
+
+    public TransXY(String idx, String ord, double origin_x, double origin_y) {
         this.idx = idx;
         this.ord = ord;
         this.origin_x = origin_x;
