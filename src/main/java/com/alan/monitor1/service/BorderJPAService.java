@@ -5,6 +5,7 @@ import com.alan.monitor1.common.dto.ApiResult;
 import com.alan.monitor1.gis.*;
 import com.alan.monitor1.repository.GisEmptyRepository;
 import com.alan.monitor1.repository.GisRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -21,6 +22,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@Slf4j
 @Service("com.alan.monitor1.service.BorderJPAService")
 public class BorderJPAService {
 
@@ -56,10 +58,10 @@ public class BorderJPAService {
 
                 if(row.getCell(0) == null || row.getCell(0).equals("")){
 
-                    System.out.println(
+                    log.info(
                             "====================================================================================================");
-                    System.out.println(row.getRowNum() + " Row IDX 값 Null");
-                    System.out.println(
+                    log.info(row.getRowNum() + " Row IDX 값 Null");
+                    log.info(
                             "====================================================================================================");
 
                     continue;
@@ -115,19 +117,19 @@ public class BorderJPAService {
 
                     for(Boolean k : keySet) {
                         if(!k) {
-                            System.out.println("idx : [" + key + "] 해당 권역은 유효하지 않습니다.");
+                            log.info("idx : [" + key + "] 해당 권역은 유효하지 않습니다.");
 
                             result.setResult_code(ApiResultConsts.resultCode.ERROR_NOT_INSERT.getCode());
                             result.setResult_message("idx : [" + key + "] 해당 권역은 유효하지 않습니다." +"\n" +isValidMap.get(k));
                             result.setResult_data(fileName);
 
-                            System.out.println(isValidMap.get(k));
-                            System.out.println(result);
+                            log.info(isValidMap.get(k));
+                            log.info(result.toString());
 
                             //전체체크를 해줘야하나...
                             return result;
                         } else {
-                            System.out.println("idx : [" + key + "] 해당 권역은 유효합니다.");
+                            log.info("idx : [" + key + "] 해당 권역은 유효합니다.");
                         }
                     }
                 }
@@ -154,7 +156,7 @@ public class BorderJPAService {
             return new ApiResult(fileName, ApiResultConsts.resultCode.SUCCESS);
 
         } catch (Exception ex){
-            System.out.println(ex);
+            log.info(ex.getMessage());
             result.setResult_code(ApiResultConsts.resultCode.ERROR.getCode());
             result.setResult_message(ex.getMessage());
 
@@ -182,7 +184,7 @@ public class BorderJPAService {
             return new ApiResult(ApiResultConsts.resultCode.SUCCESS);
 
         } catch (Exception ex) {
-            System.out.println(ex);
+            log.info(ex.getMessage());
             return new ApiResult(gis, ApiResultConsts.resultCode.ERROR);
         }
     }
@@ -197,10 +199,10 @@ public class BorderJPAService {
 
         } catch (NullPointerException e) {
 
-            System.out.println(
+            log.info(
                     "====================================================================================================");
-            System.out.println("Excel 빈값 체크 : " + row.getRowNum() + " Row : " + i + " (Cell)");
-            System.out.println(
+            log.info("Excel 빈값 체크 : " + row.getRowNum() + " Row : " + i + " (Cell)");
+            log.info(
                     "====================================================================================================");
 
             throw new Exception();
@@ -226,7 +228,7 @@ public class BorderJPAService {
                 result = true;
 
         } catch(Exception e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
             result = false;
             message = e.getMessage();
         } finally {

@@ -7,6 +7,7 @@ import com.alan.monitor1.service.BorderJPAService;
 
 import com.alan.monitor1.util.JSONUtils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -22,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
 
+@Slf4j
 @RestController
 public class BorderRestController {
 
@@ -49,7 +51,7 @@ public class BorderRestController {
 
 
         try {
-            System.out.println("files Count :" + files.size());
+            log.info("files Count :" + files.size());
 
             String savePath = StringUtils.cleanPath(request.getSession().getServletContext().getRealPath("/") + "upload");
 
@@ -72,7 +74,7 @@ public class BorderRestController {
 //            if(apiResultList.size() > 0)
                 result.setResult_data(apiResultList);
 
-            System.out.println(JSONUtils.toJson(result));
+            log.info(JSONUtils.toJson(result));
 
 
 
@@ -81,7 +83,6 @@ public class BorderRestController {
 
         }
 
-        System.out.println(CommonService.apiResult(result));
         return CommonService.apiResult(result);
     }
 

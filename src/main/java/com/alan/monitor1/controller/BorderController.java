@@ -33,12 +33,14 @@ public class BorderController {
     public String home() throws Exception {
 
         return "uploadActionExcel";
+
     }
 
     @RequestMapping("/borderList") //게시판 리스트 화면 호출
     private String borderList(Model model) throws Exception{
 
         model.addAttribute("list",mBorderService.borderListService());
+
         return "borderList";
 
     }
@@ -61,6 +63,7 @@ public class BorderController {
         model.addAttribute("polyListOld",polyListOld);
         model.addAttribute("center",centerPoint);
         model.addAttribute("list",kateckBorderList);
+
         return "polyList";
     }
 

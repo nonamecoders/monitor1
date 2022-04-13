@@ -204,8 +204,7 @@ public class GeoTrans {
             double b = cos_phi * Math.sin(delta_lon);
 
             if ((Math.abs(Math.abs(b) - 1.0)) < EPSLN) {
-                //Log.d("�눧�똾釉놂옙占� 占쎈퓠占쎌쑎");
-                //System.out.println("�눧�똾釉놂옙占� 占쎈퓠占쎌쑎");
+
             }
         } else {
             double b = 0;
@@ -268,8 +267,7 @@ public class GeoTrans {
             if (Math.abs(delta_Phi) <= EPSLN) break;
 
             if (i >= max_iter) {
-                //Log.d("�눧�똾釉놂옙占� 占쎈퓠占쎌쑎");
-                //System.out.println("�눧�똾釉놂옙占� 占쎈퓠占쎌쑎");
+
                 break;
             }
 
